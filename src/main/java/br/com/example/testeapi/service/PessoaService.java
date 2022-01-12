@@ -2,6 +2,7 @@ package br.com.example.testeapi.service;
 
 import br.com.example.testeapi.model.Pessoa;
 import br.com.example.testeapi.repository.PessoaRepository;
+
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.EmptyResultDataAccessException;
@@ -13,12 +14,13 @@ public class PessoaService {
     @Autowired
     private PessoaRepository pessoaRepository;
 
-    public Pessoa atualizar(Long codigo,Pessoa pessoa){
+    public Pessoa atualizar(Long codigo, Pessoa pessoa) {
         Pessoa pessoaSalva = buscarPessoaPeloCodigo(codigo);
 
         BeanUtils.copyProperties(pessoa, pessoaSalva, "codigo");
         return pessoaRepository.save(pessoaSalva);
     }
+
 
     public void atualizarPropriedadeAtivo(Long codigo, Boolean ativo) {
         Pessoa pessoaSalva = buscarPessoaPeloCodigo(codigo);
@@ -27,10 +29,9 @@ public class PessoaService {
     }
 
     public Pessoa buscarPessoaPeloCodigo(Long codigo) {
-        Pessoa pessoaSalva = pessoaRepository.findById(codigo).orElse(null);
-        if (pessoaSalva == null) {
-            throw new EmptyResultDataAccessException(1);
-        }
+        Pessoa pessoaSalva =  pessoaRepository.findById(codigo)
+                .orElseThrow(() -> new EmptyResultDataAccessException(1));
+
         return pessoaSalva;
     }
 }

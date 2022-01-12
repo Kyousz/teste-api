@@ -1,11 +1,10 @@
 package br.com.example.testeapi.repository.filter;
 
-import org.springframework.format.annotation.DateTimeFormat;
-
 import java.time.LocalDate;
 
-public class LancamentoFilter {
+import org.springframework.format.annotation.DateTimeFormat;
 
+public class LancamentoFilter {
     private String descricao;
 
     @DateTimeFormat(pattern = "yyyy-MM-dd")

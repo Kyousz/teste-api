@@ -1,10 +1,11 @@
-package br.com.example.testeapi.token;
+package br.com.example.testeapi.config.token;
 
 import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import br.com.example.testeapi.config.property.TesteApiProperty;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.MethodParameter;
 import org.springframework.http.MediaType;
@@ -26,40 +27,37 @@ public class RefreshTokenPostProcessor implements ResponseBodyAdvice<OAuth2Acces
     private TesteApiProperty testeApiProperty;
 
     @Override
-    public boolean supports(MethodParameter methodParameter, Class<? extends HttpMessageConverter<?>> converter) {
-        return methodParameter.getMethod().getName().equals("postAccessToken");
+    public boolean supports(MethodParameter returnType, Class<? extends HttpMessageConverter<?>> converterType) {
+        return returnType.getMethod().getName().equals("postAccessToken");
     }
 
     @Override
-    public OAuth2AccessToken beforeBodyWrite(OAuth2AccessToken oAuth2AccessToken,
-                                             MethodParameter methodParameter,
-                                             MediaType mediaType,
-                                             Class<? extends HttpMessageConverter<?>> converter,
-                                             ServerHttpRequest serverHttpRequest,
-                                             ServerHttpResponse serverHttpResponse) {
+    public OAuth2AccessToken beforeBodyWrite(OAuth2AccessToken body, MethodParameter returnType,
+                                             MediaType selectedContentType, Class<? extends HttpMessageConverter<?>> selectedConverterType,
+                                             ServerHttpRequest request, ServerHttpResponse response) {
 
-        HttpServletRequest request = ((ServletServerHttpRequest) serverHttpRequest).getServletRequest();
-        HttpServletResponse response = ((ServletServerHttpResponse) serverHttpResponse).getServletResponse();
-        DefaultOAuth2AccessToken token = (DefaultOAuth2AccessToken) oAuth2AccessToken;
+        HttpServletRequest req = ((ServletServerHttpRequest) request).getServletRequest();
+        HttpServletResponse resp = ((ServletServerHttpResponse) response).getServletResponse();
 
-        criarCookieComRefreshToken(request, response, token.getRefreshToken().getValue());
+        DefaultOAuth2AccessToken token = (DefaultOAuth2AccessToken) body;
+
+        String refreshToken = body.getRefreshToken().getValue();
+        adicionarRefreshTokenNoCookie(refreshToken, req, resp);
         removerRefreshTokenDoBody(token);
 
-        return token;
+        return body;
     }
 
     private void removerRefreshTokenDoBody(DefaultOAuth2AccessToken token) {
         token.setRefreshToken(null);
     }
 
-    private void criarCookieComRefreshToken(HttpServletRequest request, HttpServletResponse response, String refreshToken) {
-
+    private void adicionarRefreshTokenNoCookie(String refreshToken, HttpServletRequest req, HttpServletResponse resp) {
         Cookie refreshTokenCookie = new Cookie("refreshToken", refreshToken);
         refreshTokenCookie.setHttpOnly(true);
         refreshTokenCookie.setSecure(testeApiProperty.getSeguranca().isEnableHttps());
-        refreshTokenCookie.setPath(request.getContextPath() + "/oauth/token");
+        refreshTokenCookie.setPath(req.getContextPath() + "/oauth/token");
         refreshTokenCookie.setMaxAge(2592000);
-
-        response.addCookie(refreshTokenCookie);
+        resp.addCookie(refreshTokenCookie);
     }
 }

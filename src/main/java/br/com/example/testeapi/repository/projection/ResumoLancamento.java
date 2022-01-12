@@ -1,9 +1,9 @@
 package br.com.example.testeapi.repository.projection;
 
-import br.com.example.testeapi.model.TipoLancamento;
-
 import java.math.BigDecimal;
 import java.time.LocalDate;
+
+import br.com.example.testeapi.model.TipoLancamento;
 
 public class ResumoLancamento {
 
